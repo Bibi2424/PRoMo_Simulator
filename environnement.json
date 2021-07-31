@@ -1,0 +1,26 @@
+{
+    "caption": "PRoMo Simulator",
+    "icon": null,
+    "obstacles": [
+        {
+            "pos": [
+                206,
+                101
+            ],
+            "size": [
+                40,
+                27
+            ]
+        },
+        {
+            "pos": [
+                581,
+                281
+            ],
+            "size": [
+                60,
+                77
+            ]
+        }
+    ]
+}
