@@ -15,6 +15,7 @@ class Robot(pygame.sprite.Sprite):
 
         self.radius = radius
         self.og_image = pygame.Surface((radius*2, radius*2), SRCALPHA)
+        # self.og_image = pygame.Surface((radius*2, radius*2))
 
         pygame.draw.circle(self.og_image, (0, 128, 0), (radius, radius), radius, 0)
         pygame.draw.circle(self.og_image, (0, 0, 0), (radius, radius), radius, 3)
@@ -31,13 +32,13 @@ class Robot(pygame.sprite.Sprite):
 
     def process_event(self, event):
         if event.type == KEYDOWN or event.type == KEYUP:
-            if event.key == K_UP:
+            if event.key == K_w:
                 self.speed_x = -1 * self.MAX_SPEED_X if event.type == KEYDOWN else 0
-            if event.key == K_DOWN:
+            if event.key == K_s:
                 self.speed_x = 1 * self.MAX_SPEED_X if event.type == KEYDOWN else 0
-            if event.key == K_LEFT:
+            if event.key == K_a:
                 self.speed_theta = 1 * self.MAX_SPEED_THETA if event.type == KEYDOWN else 0
-            if event.key == K_RIGHT:
+            if event.key == K_d:
                 self.speed_theta = -1 * self.MAX_SPEED_THETA if event.type == KEYDOWN else 0
 
 
@@ -57,7 +58,12 @@ class Robot(pygame.sprite.Sprite):
         # Collision
         collision_list = pygame.sprite.spritecollide(self, env, False, collided = circle_square_collider)
 
-        if collision_list:
+        # inside = terrain.contains(self.rect)
+        borders = pygame.sprite.Sprite()
+        borders.rect = pygame.Rect((0, 0), (2000, 2000))
+        inside = is_circle_inside_rect(self, borders)
+
+        if collision_list or not inside:
             self.rect = old_rect
 
 

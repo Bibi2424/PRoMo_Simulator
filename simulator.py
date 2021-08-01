@@ -9,6 +9,7 @@ import environnement
 FPS = 60
 
 BACKGROUND_COLOR = (32, 32, 32)
+RESOLUTION = (1200, 800)
 
 
 def save_environnement(file_name, env_list, env):
@@ -28,15 +29,21 @@ def main():
 
     pygame.init()
 
-    DISPLAYSURF = pygame.display.set_mode((800,600))
-    DISPLAYSURF.fill(BACKGROUND_COLOR)
+    game_display = pygame.display.set_mode(RESOLUTION)
+    game_display.fill(BACKGROUND_COLOR)
     pygame.display.set_caption(env_list['caption'])
-
-    terrain = pygame.Surface((2000, 2000))
 
     FramePerSec = pygame.time.Clock()
 
-    main_robot = robot.Robot((400, 300))
+    terrain = pygame.Surface((2000, 2000))
+    terrain.fill(BACKGROUND_COLOR)
+    for i in range(0, 2000, 50):
+        pygame.draw.line(terrain, (50, 50, 50), (0, i), (2000, i), 1)
+        pygame.draw.line(terrain, (50, 50, 50), (i, 0), (i, 2000), 1)
+    # terrain = environnement.Terrain((2000, 2000))
+
+    main_robot = robot.Robot((1000, 1000))
+    main_group = pygame.sprite.GroupSingle(main_robot)
 
     env = environnement.Environnement()
 
@@ -47,31 +54,46 @@ def main():
     start_point = None
     new_obs = None
 
+    offset = [0, 0]
+
     while running:
+
+        screens_offset = (-(main_robot.rect.center[0] - game_display.get_size()[0]/2), -(main_robot.rect.center[1] - game_display.get_size()[1]/2))
 
         # Event
         for event in pygame.event.get():
-            if event.type == QUIT:
+            if event.type == QUIT or event.type == KEYDOWN and event.key == K_ESCAPE:
                 running = False
 
+            if event.type == MOUSEBUTTONDOWN or event.type == MOUSEBUTTONUP:
+                event.pos = (event.pos[0] - screens_offset[0], event.pos[1] - screens_offset[1])
             new_obs = env.process_event(event)
             main_robot.process_event(event)
 
-            if event.type == KEYDOWN and event.key == K_s:
+            if event.type == KEYDOWN and event.key == K_m:
                 save_environnement('environnement.json', env_list, env)
 
-            if event.type == MOUSEBUTTONDOWN:
-                print(event.button)
+            # if event.type == MOUSEBUTTONDOWN:
+            #     print(event.button)
 
         # Update
+        # NOTE: change mouse position to world coordinate
+        pos = pygame.mouse.get_pos()
+        pos = (-screens_offset[0] + pos[0], -screens_offset[1] + pos[1])
+        env.update_selection(pos, main_group)
+
         main_robot.update(env)
-        if new_obs:
-            new_obs.update_button_right(pygame.mouse.get_pos())
 
         # Display
-        DISPLAYSURF.fill(BACKGROUND_COLOR)
-        main_robot.draw(DISPLAYSURF)
-        env.draw(DISPLAYSURF)
+        game_display.fill((0, 0, 0))
+        bkg = pygame.Surface(terrain.get_size())
+
+        bkg.blit(terrain, (0, 0))
+
+        main_robot.draw(bkg)
+        env.draw(bkg)
+
+        game_display.blit(bkg, screens_offset)
              
         pygame.display.update()
         FramePerSec.tick(FPS)
