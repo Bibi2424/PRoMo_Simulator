@@ -42,7 +42,7 @@ class Robot(pygame.sprite.Sprite):
                 self.speed_theta = -1 * self.MAX_SPEED_THETA if event.type == KEYDOWN else 0
 
 
-    def update(self, env):
+    def update(self, env, borders):
         # Transform based on speed
         self.theta = self.theta + self.speed_theta
 
@@ -58,9 +58,6 @@ class Robot(pygame.sprite.Sprite):
         # Collision
         collision_list = pygame.sprite.spritecollide(self, env, False, collided = circle_square_collider)
 
-        # inside = terrain.contains(self.rect)
-        borders = pygame.sprite.Sprite()
-        borders.rect = pygame.Rect((0, 0), (2000, 2000))
         inside = is_circle_inside_rect(self, borders)
 
         if collision_list or not inside:

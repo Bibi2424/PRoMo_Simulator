@@ -48,7 +48,7 @@ class Environnement(pygame.sprite.Group):
         next_obs = obstacle.Obstacle(self.new_obs.rect.topleft, self.new_obs.rect.size)
         next_obs.update_button_right(new_pos)
 
-        print(next_obs.rect, self.new_obs.rect)
+        # print(next_obs.rect, self.new_obs.rect)
 
         collision_list = pygame.sprite.spritecollide(next_obs, collision_group, False, collided = square_circle_collider)
         if collision_list:

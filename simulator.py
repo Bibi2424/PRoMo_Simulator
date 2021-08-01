@@ -42,6 +42,9 @@ def main():
         pygame.draw.line(terrain, (50, 50, 50), (i, 0), (i, 2000), 1)
     # terrain = environnement.Terrain((2000, 2000))
 
+    borders = pygame.sprite.Sprite()
+    borders.rect = terrain.get_rect()
+
     main_robot = robot.Robot((1000, 1000))
     main_group = pygame.sprite.GroupSingle(main_robot)
 
@@ -50,39 +53,41 @@ def main():
     for obs in env_list['obstacles']:
         env.add(obstacle.Obstacle(tuple(obs['pos']), tuple(obs['size'])))
 
+    scale = 1
     running = True
-    start_point = None
-    new_obs = None
-
-    offset = [0, 0]
+    screens_offset = (-(int(main_robot.rect.center[0] * scale) - game_display.get_size()[0]/2), -(int(main_robot.rect.center[1] * scale) - game_display.get_size()[1]/2))
 
     while running:
-
-        screens_offset = (-(main_robot.rect.center[0] - game_display.get_size()[0]/2), -(main_robot.rect.center[1] - game_display.get_size()[1]/2))
 
         # Event
         for event in pygame.event.get():
             if event.type == QUIT or event.type == KEYDOWN and event.key == K_ESCAPE:
                 running = False
 
-            if event.type == MOUSEBUTTONDOWN or event.type == MOUSEBUTTONUP:
-                event.pos = (event.pos[0] - screens_offset[0], event.pos[1] - screens_offset[1])
-            new_obs = env.process_event(event)
+            if event.type == MOUSEBUTTONDOWN or event.type == MOUSEBUTTONUP or event.type == MOUSEMOTION:
+                # NOTE: change mouse position to world coordinate
+                event.pos = (int((event.pos[0] - screens_offset[0]) / scale), int((event.pos[1] - screens_offset[1]) / scale))
+
+            env.process_event(event)
             main_robot.process_event(event)
 
             if event.type == KEYDOWN and event.key == K_m:
                 save_environnement('environnement.json', env_list, env)
 
-            # if event.type == MOUSEBUTTONDOWN:
-            #     print(event.button)
+            if event.type == MOUSEMOTION:
+                env.update_selection(event.pos, main_group)
+
+            # if event.type == MOUSEBUTTONDOWN or event.type == MOUSEBUTTONUP:
+            #     print(event.type, event.button)
+
+            if event.type == MOUSEWHEEL:
+                # print(f'mouse wheel: {event.which}, {event.flipped}, {event.x}, {event.y}')
+                scale += event.y / 10
+                if scale <= 0.1:
+                    scale = 0.1
 
         # Update
-        # NOTE: change mouse position to world coordinate
-        pos = pygame.mouse.get_pos()
-        pos = (-screens_offset[0] + pos[0], -screens_offset[1] + pos[1])
-        env.update_selection(pos, main_group)
-
-        main_robot.update(env)
+        main_robot.update(env, borders)
 
         # Display
         game_display.fill((0, 0, 0))
@@ -93,7 +98,12 @@ def main():
         main_robot.draw(bkg)
         env.draw(bkg)
 
-        game_display.blit(bkg, screens_offset)
+        new_size = terrain.get_size()
+        new_size = (int(new_size[0] * scale), int(new_size[1] * scale))
+        temp = pygame.transform.scale(bkg, new_size)
+
+        screens_offset = (-(int(main_robot.rect.center[0] * scale) - game_display.get_size()[0]/2), -(int(main_robot.rect.center[1] * scale) - game_display.get_size()[1]/2))
+        game_display.blit(temp, screens_offset)
              
         pygame.display.update()
         FramePerSec.tick(FPS)
