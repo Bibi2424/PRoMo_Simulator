@@ -6,25 +6,36 @@ class Obstacle(pygame.sprite.Sprite):
     def __init__(self, pos, size, color = (128, 0, 0)):
         super().__init__() 
 
-        print(f'Creating obstacle size:{size} at {pos}')
+        # print(f'Creating obstacle size:{size} at {pos}')
         self.color = color
         self.image = pygame.Surface(size)
         self.image.fill(self.color)
         self.rect = self.image.get_rect(topleft = pos)
 
-    # def update(self, new_pos):
-    #   self.rect.center = new_pos
+        self.og_pos = pos
+
 
     def update_button_right(self, pos):
-        topleft = self.rect.topleft
-        bottomright = pos
-        size = (abs(bottomright[0] - topleft[0]), abs(bottomright[1] - topleft[1]))
+        if pos[0] <= self.og_pos[0]:
+            left = pos[0]
+            right = self.og_pos[0]
+        else:
+            left = self.og_pos[0]
+            right = pos[0]
+
+        if pos[1] <= self.og_pos[1]:
+            top = pos[1]
+            bottom = self.og_pos[1]
+        else:
+            top = self.og_pos[1]
+            bottom = pos[1]
+
+        topleft = (left, top)
+        size = (right-left, bottom-top)
         self.rect.update(topleft, size)
-        self.image = pygame.Surface(self.rect.size)
+        self.image = pygame.transform.scale(self.image, self.rect.size)
         self.image.fill(self.color)
-        # self.image = pygame.Surface(size)
-        # self.image.fill(color)
-        # self.rect = self.image.get_rect(bottomleft = pos)
+
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
