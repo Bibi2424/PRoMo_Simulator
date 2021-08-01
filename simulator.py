@@ -47,7 +47,6 @@ def main():
     start_point = None
     new_obs = None
 
-
     while running:
 
         # Event
@@ -63,8 +62,6 @@ def main():
 
             if event.type == MOUSEBUTTONDOWN:
                 print(event.button)
-
-
 
         # Update
         main_robot.update(env)
